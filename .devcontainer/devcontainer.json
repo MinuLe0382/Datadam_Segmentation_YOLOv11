@@ -1,0 +1,26 @@
+{
+    "name": "YOLO v11 (CUDA)",
+
+    "build": {
+        "dockerfile": "Dockerfile"
+    },
+
+    "runArgs": [
+        "--gpus=all",
+        "--shm-size=8g",
+        "--ipc=host"
+    ],
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-toolsai.jupyter",
+                "natqe.reload",
+                "mechatroner.rainbow-csv"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/bin/python3"
+            }
+        }
+    }
+}
