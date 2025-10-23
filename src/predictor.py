@@ -22,10 +22,10 @@ from typing import List
 from .mask_processing import get_prediction_mask
 
 def test_time_augmentation(
-    model: YOLO, 
-    original_image: np.ndarray, 
-    apply_tta: bool, 
-    tta_scales: List[float], 
+    model: YOLO,
+    original_image: np.ndarray,
+    apply_tta: bool,
+    tta_scales: List[float],
     conf_threshold: float,
 ) -> np.ndarray:
     
@@ -33,7 +33,7 @@ def test_time_augmentation(
 
     if apply_tta:
         all_pred_masks = []
-        images_to_test = [original_image, cv2.flip(original_image, 1)] 
+        images_to_test = [original_image, cv2.flip(original_image, 1)]
         
         for idx, img in enumerate(images_to_test):
             for scale in tta_scales:

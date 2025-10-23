@@ -20,7 +20,7 @@ def save_comparison_figure(image, pred_mask, gt_mask, iou, save_path):
     plt.title(f'Ground Truth Mask\nIoU: {iou:.4f}')
     plt.axis('off')
     
-    plt.savefig(f"{save_path}.png")
+    plt.savefig(f"{save_path}")
     plt.close()
 
 # iou가 작은 list를 확인
