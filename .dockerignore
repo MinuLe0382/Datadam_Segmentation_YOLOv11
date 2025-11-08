@@ -1,0 +1,10 @@
+# .dockerignore
+
+datasets/
+datasets_origin/
+.devcontainer/
+.git/
+__pycache__/
+outputs/prediction_results/
+outputs/runs/*
+!outputs/runs/pretrained/
