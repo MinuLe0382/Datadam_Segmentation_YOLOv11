@@ -34,12 +34,19 @@ def get_prediction_mask(model, image, conf_threshold):
     results = model.predict(image, verbose=False, conf=conf_threshold)
     result = results[0]
     mask_combined = np.zeros((h, w), dtype=np.float32)
+    detected_classes = []
+
     if result.masks is not None:
         for mask_tensor in result.masks.data:
             single_mask_float = mask_tensor.cpu().numpy()
             single_mask_resized = cv2.resize(single_mask_float, (w, h), interpolation=cv2.INTER_LINEAR)
             mask_combined = np.maximum(mask_combined, single_mask_resized)
-    return mask_combined
+
+    if result.boxes is not None and result.boxes.cls is not None:
+        detected_classes = result.boxes.cls.cpu().numpy().astype(int).tolist()
+        
+    unique_classes = sorted(list(set(detected_classes)))
+    return mask_combined, unique_classes
 
 def smooth_mask_gaussian(pred_mask, kernel_size=(5, 5), threshold_val=127):
 

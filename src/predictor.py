@@ -18,7 +18,7 @@
 import cv2
 import numpy as np
 from ultralytics import YOLO
-from typing import List
+from typing import List, Tuple
 from .mask_processing import get_prediction_mask
 
 def test_time_augmentation(
@@ -27,8 +27,8 @@ def test_time_augmentation(
     apply_tta: bool,
     tta_scales: List[float],
     conf_threshold: float,
-) -> np.ndarray:
-    
+) -> Tuple[np.ndarray, List[int]]:
+    all_detected_classes = set()
     orig_h, orig_w = original_image.shape[:2]
 
     if apply_tta:
@@ -44,8 +44,9 @@ def test_time_augmentation(
                 scaled_img = cv2.resize(img, (scaled_w, scaled_h), interpolation=cv2.INTER_LINEAR)
                 
                 # get_prediction_mask는 항상 (h, w) 크기의 부동 소수점 마스크를 반환
-                pred_mask_scaled = get_prediction_mask(model, scaled_img, conf_threshold)
+                pred_mask_scaled, detected_classes = get_prediction_mask(model, scaled_img, conf_threshold)
                 
+                all_detected_classes.update(detected_classes)
                 # 원본 이미지 크기로 복원
                 pred_mask_restored = cv2.resize(pred_mask_scaled, (orig_w, orig_h), interpolation=cv2.INTER_LINEAR)
                 
@@ -58,9 +59,10 @@ def test_time_augmentation(
         final_pred_mask_float = np.mean(all_pred_masks, axis=0)
 
     else: # TTA 미적용
-        final_pred_mask_float = get_prediction_mask(model, original_image, conf_threshold)
-        
+        final_pred_mask_float, detected_classes = get_prediction_mask(model, original_image, conf_threshold)
+        all_detected_classes.update(detected_classes)
+
     # 이진화
     pred_mask_binary = (final_pred_mask_float > 0.5).astype(np.uint8)
 
-    return pred_mask_binary
+    return pred_mask_binary, sorted(list(all_detected_classes))

@@ -7,6 +7,7 @@ from src.metrics import calculate_trimap_iou
 from src.mask_processing import smooth_mask_gaussian, get_prediction_mask, txt_to_mask
 from src.visualize import save_comparison_figure, save_low_iou_list, save_iou_distribution_figure
 from src.predictor import test_time_augmentation
+from src.logger import EvaluationLogger
 import argparse
 
 # 1. ArgumentParser 객체 생성
@@ -75,7 +76,7 @@ def main():
     print(f"---------------------------------")
 
     model = YOLO(MODEL_PATH)
-
+    logger = EvaluationLogger(MODEL_PATH, APPLY_TTA, CONFIDENCE_THRESHOLD)
     try:
         image_files = sorted([f for f in os.listdir(TEST_IMAGE_DIR) if f.lower().endswith(('.png', '.jpg', '.jpeg'))])
         if not image_files:
@@ -98,7 +99,7 @@ def main():
         orig_h, orig_w = original_image.shape[:2]
 
         # test_time_augmentation 수행
-        pred_mask_binary = test_time_augmentation(
+        pred_mask_binary, pred_classes = test_time_augmentation(
             model,
             original_image,
             APPLY_TTA,
@@ -123,6 +124,7 @@ def main():
             num_images_with_labels += 1
             all_iou_scores.append(trimap_iou)
 
+            logger.update(filename, trimap_iou, gt_label_path, pred_classes)
             if trimap_iou < LOW_IOU_THRESHOLD:
                 if SAVE_LOW_IOU_VISUALIZATION:
                     save_comparison_figure(
@@ -131,11 +133,13 @@ def main():
                     )
     
     save_iou_distribution_figure(all_iou_scores, os.path.join(base_results_dir, 'iou_distribution.png'))
-
+    
     if num_images_with_labels > 0:
         mean_iou = total_trimap_iou / num_images_with_labels
         print(f"\n--- Evaluation Complete ---")
         print(f"mIoU over {num_images_with_labels} images: {mean_iou:.4f}")
+        logger.save(base_results_dir)
+
     else:
         print(f"정답 라벨 파일(.txt)이 없어 mIoU를 계산할 수 없습니다.")
 
