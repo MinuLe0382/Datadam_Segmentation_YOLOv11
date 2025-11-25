@@ -1,7 +1,11 @@
+# src/metrics.py
+'''
+IoU(Intersection over Union) 계산 모듈
+'''
 import cv2
 import numpy as np
 
-def calculate_trimap_iou(pred_mask: np.ndarray, gt_mask: np.ndarray, kernel_size: int = 5) -> float:
+def calculate_iou(pred_mask: np.ndarray, gt_mask: np.ndarray, kernel_size: int = 5) -> float:
 
     kernel = np.ones((kernel_size, kernel_size), np.uint8)
     gt_mask_255 = (gt_mask * 255).astype(np.uint8)
@@ -21,5 +25,7 @@ def calculate_trimap_iou(pred_mask: np.ndarray, gt_mask: np.ndarray, kernel_size
     
     intersection = np.logical_and(pred_mask_bool, gt_mask_bool).sum()
     union = np.logical_or(pred_mask_bool, gt_mask_bool).sum()
+
+    iou = float(intersection / union) if union > 0 else 0.0
     
-    return float(intersection / union) if union > 0 else 0.0
+    return iou, int(intersection), int(union)

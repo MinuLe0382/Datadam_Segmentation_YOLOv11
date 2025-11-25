@@ -19,3 +19,7 @@ tqdm
 matplotlib
 einops
 ipykernel
+
+# NAS & SSH Automation Tools
+synology-api
+paramiko

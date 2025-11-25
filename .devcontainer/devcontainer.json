@@ -2,7 +2,8 @@
     "name": "YOLO v11 (CUDA)",
 
     "build": {
-        "dockerfile": "Dockerfile"
+        "dockerfile": "Dockerfile",
+        "context": ".."
     },
 
     "runArgs": [

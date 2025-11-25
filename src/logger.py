@@ -16,19 +16,19 @@ class EvaluationLogger:
     """
     평가 로그를 관리하고 JSON 파일로 저장하는 클래스
     """
-    def __init__(self, model_path: str, tta_enabled: bool, conf_threshold: float):
+    def __init__(self, model_path: str, aug_enabled: bool, conf_threshold: float):
         """
         EvaluationLogger 초기화
 
         Args:
             model_path (str): 평가에 사용된 모델 파일 경로.
-            tta_enabled (bool): TTA(Test-Time Augmentation) 사용 여부.
+            aug_enabled (bool): TTA(Test-Time Augmentation) 사용 여부.
             conf_threshold (float): 예측 신뢰도 임계값.
         """
         self.metadata = {
             "model_path": model_path,
             "evaluation_date": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "tta_enabled": tta_enabled,
+            "aug_enabled": aug_enabled,
             "conf_threshold": conf_threshold
         }
         self.details: List[Dict[str, Any]] = []
@@ -52,13 +52,15 @@ class EvaluationLogger:
             classes = {int(line.strip().split()[0]) for line in f if line.strip()}
         return sorted(list(classes))
 
-    def update(self, filename: str, iou: float, gt_label_path: str, pred_classes: List[int]):
+    def update(self, filename: str, iou: float, intersection: int, union: int, gt_label_path: str, pred_classes: List[int]):
         """
         개별 이미지의 평가 결과를 로그에 추가
 
         Args:
             filename (str): 이미지 파일 이름.
             iou (float): 계산된 IoU 값.
+            intersection (int): 교집합 픽셀 수.
+            union (int): 합집합 픽셀 수.
             gt_label_path (str): 정답 라벨 파일 경로.
             pred_classes (List[int]): 모델이 예측한 클래스 ID 리스트.
         """
@@ -67,7 +69,9 @@ class EvaluationLogger:
         
         self.details.append({
             "filename": filename,
-            "trimap_iou": round(float(iou), 4),
+            "iou": round(float(iou), 4),
+            "intersection_px": intersection,
+            "union_px": union,
             "gt_classes": self._get_gt_classes(gt_label_path),
             "pred_classes": pred_classes
         })

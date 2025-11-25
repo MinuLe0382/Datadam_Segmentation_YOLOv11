@@ -8,15 +8,13 @@ venv/
 env/
 
 datasets/
-datasets_old/
-datasets_origin/
 outputs/
-
+legacy/
 runs/
 test_results/
-
+datasets_lists/
 *.pt
-weights/*.pt
+*.png
 
 .vscode/
 .idea/

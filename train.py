@@ -54,5 +54,6 @@ results = model.train(data=yaml_file,
                       flipud=0.5,      # 50% 확률로 상하 반전
                       hsv_h=0.015,     # 색상(Hue) 변형 강도
                       hsv_s=0.7,       # 채도(Saturation) 변형 강도
-                      hsv_v=0.4        # 명도(Value) 변형 강도
+                      hsv_v=0.4,        # 명도(Value) 변형 강도
+                      # save_period=1,
 )
