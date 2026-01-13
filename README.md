@@ -1,238 +1,123 @@
 # Datadam Segmentation YOLOv11
 
-한국지능정보사회진흥원 2025년도 초거대AI 확산 생태계 조성 사업 [과제 3]
+3D Segmentation → Style Transfer 파트 중 3D Segmentation을 수행하기 위한 Segmentation 파트의 코드
 
-컨소시엄의 제안사항 3D Segmentation → Style Transfer 파트 중 3D Segmentation을 수행하기 위한 Segmentation 파트의 코드
+기존의 Foundation 모델이 학습하지 않은 네일/페디 부분의 segmentation을 수행하기 위해 YOLOv11을 사용. YOLOv11-seg 모델은 segmentation task에 최적화된 모델로, Backbone(CSPNet), Neck(PANet), Head(Segmentation Head)로 구성됨
 
-기존의 Foundation 모델이 학습하지 않은 네일/페디 부분의 segmentation을 수행하기 위해 YOLOv11을 사용
+![YOLOv11Architecture](YOLOv11_Architecture.png)
 
-## 📊 Dataset
+## 데이터셋
 
-- **Train**: ~32,000 images
-- **Validation**: ~4,000 images  
-- **Test**: ~4,000 images
+- **Train**: 32,000 images
+- **Validation**: 4,000 images  
+- **Test**: 4,000 images
 
-## 🎯 Classes
+## Classes
 
 - `0`: Fingernail (손톱)
 - `1`: Toenail (발톱)
 
-## 🚀 Installation
 
-프로젝트 설정 시 Dev Container를 통한 구축을 위한 Dockerfile 제공. 로컬 수동 설치도 가능
-
-### Option 1: Dev Container (Recommended)
-
-#### Prerequisites
-- Visual Studio Code (with Dev Containers extension)
-- Docker Desktop
-
-#### Steps
-1. Clone Repository
-```bash
-git clone https://github.com/MinuLe0382/Datadam_Segmentation_YOLOv11.git
-cd Datadam_Segmentation_YOLOv11
-```
-
-2. Open in Visual Studio Code
-```bash
-code .
-```
-
-3. Reopen in Container
-   - Press `F1` or `Ctrl+Shift+P`
-   - Select `Dev Containers: Reopen in Container`
-   - Wait for container to build and start
-
-### Option 2: Manual Local Installation
-
-#### Prerequisites
-- Python 3.8+
-- CUDA 12.1 (for GPU support)
-
-#### Steps
-1. Clone Repository
-```bash
-git clone https://github.com/MinuLe0382/Datadam_Segmentation_YOLOv11.git
-cd Datadam_Segmentation_YOLOv11
-```
-
-2. Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-## 📁 Project Structure
+## 📁 프로젝트 구조
 
 ```
 Datadam_Segmentation_YOLOv11/
-├── .devcontainer/          # Dev container configuration
+├── .devcontainer/          
 │   ├── Dockerfile
 │   └── devcontainer.json
-├── datasets/               # Training/validation/test data
+├── datasets/              
 │   ├── train/
 │   ├── val/
 │   └── test/
-├── datasets_lists/         # Image path lists (generated)
+├── datasets_lists/       
 │   ├── train.txt
 │   ├── val.txt
 │   └── test.txt
-├── outputs/                # Training and evaluation outputs
-│   ├── runs/              # Training runs
-│   └── prediction_results/ # Evaluation results
-├── src/                    # Core modules
-│   ├── logger.py          # Evaluation logging
-│   ├── mask_processing.py # Mask processing utilities
-│   ├── metrics.py         # IoU calculation
-│   ├── predictor.py       # TTA prediction
-│   └── visualize.py       # Visualization utilities
-├── weights/                # Model weights
-├── preprocess.py          # Dataset preprocessing
-├── train.py               # Training script
-├── eval.py                # Evaluation script
-├── nail.yaml              # Dataset configuration
-└── requirements.txt       # Python dependencies
+├── outputs/               
+│   ├── runs/             
+│   └── prediction_results/ 
+├── src/                    
+│   ├── logger.py         
+│   ├── mask_processing.py 
+│   ├── metrics.py         
+│   ├── predictor.py       
+│   └── visualize.py       
+├── weights/               
+├── preprocess.py        
+├── train.py            
+├── eval.py            
+├── nail.yaml        
+└── requirements.txt    
 ```
 
-## 🔧 Usage
 
-> [!IMPORTANT]
-> Before training or evaluation, you **must** run the preprocessing script to convert COCO annotations to YOLO format and generate dataset lists.
+## 입출력 사양
 
-### 1. Data Preprocessing
+### 입력 (Input)
 
-Convert COCO format annotations to YOLO format and generate image lists:
+| 항목 | 사양 |
+|------|------|
+| 형식 | RGB 이미지(.png) |
+| 해상도 | 임의의 이미지 (자동 reshape)|
 
-```bash
-python preprocess.py
+### 출력 (Output)
+
+| 항목 | 사양 |
+|------|------|
+| 형식 | 세그멘테이션 마스크(.png) |
+| 해상도 | 입력과 동일 |
+| 채널 | 1 (이진 마스크) |
+| 값 범위 | 0 (배경), 1 (객체) |
+
+```
+```
+## 기본 학습 설정
+
+### 최적화 (Optimizer)
+
+| 항목 | 설정값 |
+|------|--------|
+| Optimizer | SGD |
+| 초기 학습률 | 0.01 |
+| Momentum | 0.9 |
+| Weight Decay | 0.0005 |
+
+### 학습 파라미터
+
+| 항목 | 설정값 |
+|------|--------|
+| Epochs | 50 |
+| Batch Size | 9 |
+| GPU | 3개 |
+
+### 데이터 증강
+
+| 항목 | 설정값 |
+|------|--------|
+| 회전 | ±15도 |
+| 이동 | ±10% |
+| 크기 조절 | ±20% |
+| 좌우 반전 | 50% |
+| 상하 반전 | 50% |
+| HSV (h/s/v) | 0.015 / 0.7 / 0.4 |
 ```
 
-This script will:
-- Convert COCO JSON annotations to YOLO txt format
-- Generate image path lists in `datasets_lists/`
-- Create labels in each dataset folder
-
-### 2. Training
-
-Train the YOLOv11 segmentation model:
-
-```bash
-# Basic training
-python train.py --epochs 50 --device 0 --batch 8
-
-# Multi-GPU training
-python train.py --epochs 50 --device 0 1 2 --batch 9
-
-# Custom configuration
-python train.py --epochs 100 --device 0 1 --batch 16
+```
+## 학습 결과
+test 데이터셋에 대하여 mIoU 0.92달성
 ```
 
-**Arguments:**
-- `--epochs`: Number of training epochs (default: 50)
-- `--device`: GPU device IDs (default: 0)
-- `--batch`: Batch size (default: 8)
-
-**Training Features:**
-- Image size: 1632×1632 (32의 배수)
-- Data augmentation:
-  - Rotation: ±15°
-  - Translation: ±10%
-  - Scale: ±20%
-  - Horizontal flip: 50%
-  - Vertical flip: 50%
-  - HSV augmentation
-
-### 3. Evaluation
-
-Evaluate trained model on test set:
-
-```bash
-# Full evaluation with TTA
-python eval.py \
-  --model_path outputs/runs/train/weights/best.pt \
-  --data_list datasets_lists/test.txt
-
-# Evaluation without TTA
-python eval.py \
-  --model_path outputs/runs/train/weights/best.pt \
-  --data_list datasets_lists/test.txt \
-  --no-aug
-
-# Fast evaluation (no visualization)
-python eval.py \
-  --model_path outputs/runs/train/weights/best.pt \
-  --data_list datasets_lists/test.txt \
-  --no-save-masks \
-  --no-low-iou-vis
 ```
+## 라이센스
 
-**Arguments:**
-- `--model_path`: Path to trained model (.pt file) [Required]
-- `--data_list`: Path to dataset list txt file [Required]
-- `--no-save-masks`: Do not save predicted masks
-- `--no-low-iou-vis`: Do not save low IoU visualizations
-- `--low_iou_threshold`: IoU threshold for visualization (default: 0.01)
-- `--no-aug`: Disable Test-Time Augmentation
+이 프로젝트는 Apache License 2.0에 따라 배포됩니다.
 
-**Evaluation Outputs:**
-- `prediction/`: Predicted masks
-- `vis/`: Low IoU comparison visualizations
-- `evaluation_results.json`: Detailed metrics
-- `iou_distribution.png`: IoU score distribution
-
-## 🧪 Test-Time Augmentation (TTA)
-
-The evaluation script supports TTA with:
-- Multi-scale testing: [0.8, 0.9, 1.0, 1.1, 1.2]
-- Horizontal flip augmentation
-- Ensemble averaging for robust predictions
-
-## 📊 Evaluation Metrics
-
-- **mIoU (mean Intersection over Union)**: Primary metric
-- **Trimap-based IoU**: Excludes boundary pixels for fair evaluation
-- **Per-image IoU scores**: Detailed analysis
-- **Class-wise predictions**: Fingernail vs Toenail detection
-
-## 🛠️ Key Features
-
-1. **Modular Architecture**: Clean separation of concerns in `src/` modules
-2. **Comprehensive Logging**: JSON-based evaluation results with metadata
-3. **Visualization Tools**: Automatic generation of comparison figures
-4. **Flexible Preprocessing**: COCO to YOLO format conversion
-5. **Advanced Augmentation**: Both training-time and test-time augmentation
-6. **GPU Support**: Multi-GPU training capability
-
-## 📦 Dependencies
-
-Main dependencies (see `requirements.txt` for full list):
-- PyTorch 2.1.1 (CUDA 12.1)
-- Ultralytics YOLOv11
-- OpenCV 4.8.1
-- NumPy 1.26.4
-- Matplotlib
-- MONAI 1.3.0
-
-## 📝 Quick Start Tutorial
-
-```bash
-# 1. Preprocess dataset
-python preprocess.py
-
-# 2. Train model
-python train.py --epochs 50 --device 0 1 2 --batch 9
-
-# 3. Evaluate model
-python eval.py \
-  --model_path outputs/runs/train/weights/best.pt \
-  --data_list datasets_lists/test.txt \
-  --low_iou_threshold 0.5
 ```
+Copyright 2025 광운대학교
 
-## 📄 License
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-This project is part of the 2025 Korea Intelligence & Information Society Agency (NIA) Hyperscale AI Ecosystem Development Project.
-
-## 🔗 Repository
-
-[https://github.com/MinuLe0382/Datadam_Segmentation_YOLOv11](https://github.com/MinuLe0382/Datadam_Segmentation_YOLOv11)
+    http://www.apache.org/licenses/LICENSE-2.0
+```

@@ -3,16 +3,17 @@ __pycache__/
 *.pyo
 *.pyd
 
+1. segmentation/
 .venv/
 venv/
 env/
-
 datasets/
 outputs/
 legacy/
 runs/
 test_results/
 datasets_lists/
+data_guide/
 *.pt
 *.png
 

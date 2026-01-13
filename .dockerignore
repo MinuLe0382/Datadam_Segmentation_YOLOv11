@@ -4,8 +4,11 @@ datasets/
 .devcontainer/
 .git/
 __pycache__/
+outputs/comparison_results/
 outputs/prediction_results/
 outputs/runs/*
 !outputs/runs/pretrained/
 legacy/
 datasets_lists/
+eval_final.py
+1. segmentation/

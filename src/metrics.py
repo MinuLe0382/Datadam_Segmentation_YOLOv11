@@ -1,6 +1,7 @@
 # src/metrics.py
 '''
 IoU(Intersection over Union) 계산 모듈
+작은 오브젝트에 대한 합리적 평가를 위해 트리맵 방식을 사용
 '''
 import cv2
 import numpy as np
